@@ -24,4 +24,8 @@ A web-based tool for tracking revenue from NFT contracts using blockchain data.
 
 ## License
 
-This project is open source and available under the [MIT License](LICENSE). 
+This project is open source and available under the [MIT License](LICENSE).
+
+## Deployment
+
+This project is deployed on GitHub Pages and accessible at: https://onsenix12.github.io/NFT-Tracker/ 

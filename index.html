@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real NFT Contract Revenue Tracker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .setup-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .setup-section h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        
+        .setup-steps {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            border-radius: 10px;
+        }
+        
+        .results {
+            margin-top: 30px;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .contract-card {
+            background: #ffffff;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .contract-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+        
+        .rank-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .rank-1 { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #333; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); color: #333; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32 0%, #ffa500 100%); color: white; }
+        
+        .contract-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .contract-address {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+        
+        .etherscan-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-bottom: 15px;
+        }
+        
+        .revenue-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+        
+        .revenue-stat {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .revenue-value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .revenue-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .transaction-list {
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .transaction {
+            background: #f8f9fa;
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #6c757d;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        
+        .api-test {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Real NFT Contract Revenue Tracker</h1>
+        
+        <div class="setup-section">
+            <h3>🚀 Build Your Real-Time NFT Tracker</h3>
+            <p>This tool will fetch <strong>actual blockchain data</strong> from Etherscan API to track your 25 NFT contracts in real-time. No more fake numbers!</p>
+        </div>
+        
+        <div class="setup-steps">
+            <h3>📋 Setup Instructions</h3>
+            
+            <div class="step">
+                <strong>Step 1:</strong> Get a free Etherscan API key
+                <ul>
+                    <li>Go to <a href="https://etherscan.io/apis" target="_blank">etherscan.io/apis</a></li>
+                    <li>Sign up for free account</li>
+                    <li>Generate API key</li>
+                    <li><strong>Important:</strong> The same API key works for both mainnet and Sepolia testnet</li>
+                    <li><strong>Note:</strong> Free tier allows 100,000 requests per day (more than enough!)</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <strong>Step 2:</strong> Extract contract addresses from your .sol files
+                <ul>
+                    <li>Open each .sol file and look for the contract address comment</li>
+                    <li>Copy all 25 addresses</li>
+                    <li>Paste them below (one per line)</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <strong>Step 3:</strong> Run the tracker and find your #2 NFT!
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="apiKey">🔑 Etherscan API Key</label>
+            <input type="text" id="apiKey" placeholder="Your Etherscan API key here">
+            <button class="btn" onclick="testApiKey()" id="testBtn">Test API Key</button>
+            <div id="apiStatus"></div>
+        </div>
+        
+        <div class="input-group">
+            <label for="contracts">📄 Contract Addresses (one per line)</label>
+            <textarea id="contracts" placeholder="0x1234567890abcdef...&#10;0xabcdef1234567890...&#10;0x9876543210fedcba..."></textarea>
+        </div>
+        
+        <div class="warning">
+            ⚠️ <strong>Rate Limit Notice:</strong> Etherscan allows 5 requests per second. With 25 contracts, this will take about 5-10 seconds to complete.
+        </div>
+        
+        <button class="btn" onclick="trackRealContracts()" id="trackBtn">🚀 Track Real Contracts</button>
+        <button class="btn" onclick="toggleAutoRefresh()" id="refreshBtn">🔄 Auto Refresh (5min)</button>
+        <button class="btn" onclick="exportResults()" id="exportBtn" style="background: #28a745;">📊 Export to CSV</button>
+        
+        <div id="status" class="status" style="display: none;"></div>
+        
+        <div class="progress-bar" id="progressContainer" style="display: none;">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        
+        <div class="results" id="results"></div>
+        
+        <div class="last-updated" id="lastUpdated"></div>
+    </div>
+
+    <script>
+        let autoRefreshInterval;
+        let isAutoRefresh = false;
+        let contractResults = [];
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+
+        function updateProgress(current, total) {
+            const container = document.getElementById('progressContainer');
+            const bar = document.getElementById('progressBar');
+            
+            if (total > 0) {
+                container.style.display = 'block';
+                const percentage = (current / total) * 100;
+                bar.style.width = percentage + '%';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        async function testApiKey() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const testBtn = document.getElementById('testBtn');
+            
+            if (!apiKey) {
+                showStatus('Please enter an API key', 'error');
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.textContent = 'Testing...';
+
+            try {
+                // Test API with a simple call to get ETH balance of a known address on Sepolia
+                const testAddress = '0x0000000000000000000000000000000000000000';
+                const url = `https://api-sepolia.etherscan.io/api?module=account&action=balance&address=${testAddress}&tag=latest&apikey=${apiKey}`;
+                
+                console.log('Testing API with URL:', url);
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                console.log('API Test Response:', data);
+                
+                if (data.status === '1' || data.message === 'OK' || response.ok) {
+                    document.getElementById('apiStatus').innerHTML = 
+                        '<div class="api-test">✅ API Key is valid for Sepolia testnet!</div>';
+                    showStatus('API key test successful!', 'success');
+                } else if (data.message && data.message.includes('rate limit')) {
+                    document.getElementById('apiStatus').innerHTML = 
+                        '<div class="api-test">⚠️ API Key valid but rate limited. Wait a moment and try again.</div>';
+                    showStatus('API key valid but rate limited', 'success');
+                } else {
+                    throw new Error(data.result || data.message || 'Invalid API response');
+                }
+            } catch (error) {
+                console.error('API Test Error:', error);
+                document.getElementById('apiStatus').innerHTML = 
+                    '<div class="alert error">❌ API Key test failed: ' + error.message + '</div>';
+                showStatus('API key test failed: ' + error.message, 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = 'Test API Key';
+            }
+        }
+
+        async function getContractTransactions(address, apiKey) {
+            try {
+                console.log(`Fetching transactions for ${address}`);
+                
+                // Get normal transactions to this contract on Sepolia testnet
+                const url = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=desc&apikey=${apiKey}`;
+                
+                console.log('API URL:', url);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(`Response for ${address}:`, data);
+                
+                if (data.status !== '1') {
+                    // If no transactions found, that's normal - return empty data
+                    if (data.message === 'No transactions found' || data.result === 'Error! No transactions found') {
+                        return { transactions: [], totalValue: 0, count: 0 };
+                    }
+                    // Other errors should be reported
+                    throw new Error(data.message || data.result || 'API error');
+                }
+
+                // Filter for incoming transactions with value > 0 (minting transactions)
+                const incomingTxs = data.result.filter(tx => 
+                    tx.to && tx.to.toLowerCase() === address.toLowerCase() && 
+                    tx.value !== '0' && tx.value !== null
+                );
+
+                let totalValue = 0;
+                const transactions = incomingTxs.map(tx => {
+                    const ethValue = parseFloat(tx.value) / Math.pow(10, 18); // Convert Wei to ETH
+                    totalValue += ethValue;
+                    return {
+                        hash: tx.hash,
+                        from: tx.from,
+                        value: ethValue,
+                        timestamp: new Date(tx.timeStamp * 1000).toLocaleString(),
+                        blockNumber: tx.blockNumber
+                    };
+                });
+
+                console.log(`Found ${transactions.length} transactions for ${address}, total: ${totalValue} ETH`);
+
+                return {
+                    transactions: transactions,
+                    totalValue: totalValue,
+                    count: transactions.length
+                };
+            } catch (error) {
+                console.error(`Error fetching contract data for ${address}:`, error);
+                return { transactions: [], totalValue: 0, count: 0, error: error.message };
+            }
+        }
+
+        async function trackRealContracts() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const contractsText = document.getElementById('contracts').value.trim();
+            const trackBtn = document.getElementById('trackBtn');
+            
+            if (!apiKey) {
+                showStatus('Please enter your Etherscan API key first', 'error');
+                return;
+            }
+            
+            if (!contractsText) {
+                showStatus('Please enter contract addresses', 'error');
+                return;
+            }
+
+            const contracts = contractsText.split('\n')
+                .map(addr => addr.trim())
+                .filter(addr => addr && addr.startsWith('0x'));
+            
+            if (contracts.length === 0) {
+                showStatus('No valid contract addresses found', 'error');
+                return;
+            }
+
+            trackBtn.disabled = true;
+            showStatus(`Fetching real data for ${contracts.length} contracts...`, 'loading');
+            updateProgress(0, contracts.length);
+            
+            contractResults = [];
+            
+            try {
+                for (let i = 0; i < contracts.length; i++) {
+                    const address = contracts[i];
+                    updateProgress(i + 1, contracts.length);
+                    showStatus(`Fetching data for contract ${i + 1}/${contracts.length}: ${address.slice(0, 10)}...`, 'loading');
+                    
+                    const contractData = await getContractTransactions(address, apiKey);
+                    
+                    contractResults.push({
+                        address: address,
+                        name: `nft_${address.slice(-8)}.sol`,
+                        totalRevenue: contractData.totalValue,
+                        transactionCount: contractData.count,
+                        transactions: contractData.transactions,
+                        averageTransaction: contractData.count > 0 ? contractData.totalValue / contractData.count : 0,
+                        error: contractData.error
+                    });
+                    
+                    // Rate limiting: wait 200ms between requests (5 requests per second)
+                    if (i < contracts.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                }
+                
+                // Sort by total revenue
+                contractResults.sort((a, b) => b.totalRevenue - a.totalRevenue);
+                
+                displayRealResults(contractResults);
+                showStatus(`✅ Successfully fetched data for ${contracts.length} contracts!`, 'success');
+                updateLastUpdated();
+                
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                trackBtn.disabled = false;
+                updateProgress(0, 0);
+            }
+        }
+
+        function displayRealResults(results) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Calculate summary statistics
+            const totalContracts = results.length;
+            const activeContracts = results.filter(r => r.transactionCount > 0).length;
+            const totalRevenue = results.reduce((sum, r) => sum + r.totalRevenue, 0);
+            const topContract = results[0];
+            const secondContract = results[1];
+            
+            resultsDiv.innerHTML = `
+                <h2>📊 Live Contract Rankings</h2>
+                
+                <div class="summary-stats">
+                    <div class="summary-card">
+                        <div class="summary-value">${totalContracts}</div>
+                        <div class="summary-label">Total Contracts</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${activeContracts}</div>
+                        <div class="summary-label">Active Contracts</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${totalRevenue.toFixed(4)}</div>
+                        <div class="summary-label">Total ETH Revenue</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-value">${secondContract ? secondContract.totalRevenue.toFixed(4) : '0.0000'}</div>
+                        <div class="summary-label">🎯 2nd Place Revenue</div>
+                    </div>
+                </div>
+                
+                ${secondContract ? `
+                <div class="alert success">
+                    <strong>🎯 Your Best Bet for 2nd Place:</strong> ${secondContract.name} with ${secondContract.totalRevenue.toFixed(4)} ETH from ${secondContract.transactionCount} transactions
+                </div>
+                ` : ''}
+            `;
+            
+            results.forEach((contract, index) => {
+                const rank = index + 1;
+                const rankClass = rank <= 3 ? `rank-${rank}` : '';
+                
+                const card = document.createElement('div');
+                card.className = 'contract-card';
+                
+                let transactionsList = '';
+                if (contract.transactions && contract.transactions.length > 0) {
+                    transactionsList = `
+                        <div class="transaction-list">
+                            <strong>Recent Transactions:</strong>
+                            ${contract.transactions.slice(0, 5).map(tx => `
+                                <div class="transaction">
+                                    <span>${tx.value.toFixed(4)} ETH</span>
+                                    <span>${tx.timestamp}</span>
+                                </div>
+                            `).join('')}
+                            ${contract.transactions.length > 5 ? `<div class="transaction">... and ${contract.transactions.length - 5} more</div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                card.innerHTML = `
+                    <div class="rank-badge ${rankClass}">Rank #${rank}</div>
+                    <div class="contract-name">${contract.name}</div>
+                    <div class="contract-address">${contract.address}</div>
+                    <a href="https://sepolia.etherscan.io/address/${contract.address}" target="_blank" class="etherscan-link">
+                        📊 View on Etherscan
+                    </a>
+                    ${contract.error ? `<div class="alert error">Error: ${contract.error}</div>` : ''}
+                    <div class="revenue-info">
+                        <div class="revenue-stat">
+                            <div class="revenue-value">${contract.totalRevenue.toFixed(6)}</div>
+                            <div class="revenue-label">Total ETH</div>
+                        </div>
+                        <div class="revenue-stat">
+                            <div class="revenue-value">${contract.transactionCount}</div>
+                            <div class="revenue-label">Transactions</div>
+                        </div>
+                        <div class="revenue-stat">
+                            <div class="revenue-value">${contract.averageTransaction.toFixed(6)}</div>
+                            <div class="revenue-label">Avg per TX</div>
+                        </div>
+                        <div class="revenue-stat">
+                            <div class="revenue-value">${contract.transactionCount > 0 ? '🟢 Active' : '🔴 Inactive'}</div>
+                            <div class="revenue-label">Status</div>
+                        </div>
+                    </div>
+                    ${transactionsList}
+                `;
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        function toggleAutoRefresh() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            
+            if (isAutoRefresh) {
+                clearInterval(autoRefreshInterval);
+                isAutoRefresh = false;
+                refreshBtn.textContent = '🔄 Auto Refresh (5min)';
+                showStatus('Auto-refresh stopped', 'success');
+            } else {
+                autoRefreshInterval = setInterval(() => {
+                    trackRealContracts();
+                }, 300000); // 5 minutes
+                isAutoRefresh = true;
+                refreshBtn.textContent = '⏹️ Stop Auto Refresh';
+                showStatus('Auto-refresh enabled (every 5 minutes)', 'success');
+            }
+        }
+
+        function exportResults() {
+            if (contractResults.length === 0) {
+                showStatus('No data to export. Please run the tracker first.', 'error');
+                return;
+            }
+            
+            const csv = [
+                ['Rank', 'Contract Name', 'Address', 'Total ETH', 'Transactions', 'Average per TX', 'Status'],
+                ...contractResults.map((contract, index) => [
+                    index + 1,
+                    contract.name,
+                    contract.address,
+                    contract.totalRevenue.toFixed(6),
+                    contract.transactionCount,
+                    contract.averageTransaction.toFixed(6),
+                    contract.transactionCount > 0 ? 'Active' : 'Inactive'
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `nft_contracts_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showStatus('Results exported to CSV!', 'success');
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${now.toLocaleString()} (Real blockchain data)`;
+        }
+
+        // Add sample contract addresses for testing
+        document.getElementById('contracts').placeholder = 
+            '0x9e8c890c1a783eb39f7666029d707b083a1bebd6\n0xf194876B0A98DE4b635c3792e5b...\n0x1234567890abcdef...\n(Add all 25 contract addresses here)';
+    </script>
+</body>
+</html>
